@@ -1,0 +1,24 @@
+#!/bin/zsh 
+remotehost='10.64.128.0/24'
+myhost='10.64.128.26/32'
+friendhost='10.64.128.27/32'
+any='0.0.0.0/0'
+
+#ルールの初期化
+iptables -F
+iptables -X
+
+#ポリシー
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+iptables -A INPUT -i -lo -j ACCEPT
+iptables -A OUTPUT -o -lo -j ACCEPT
+
+iptables -N LOGGING
+iptables -A LOGGING -j LOG --log-level warning --log-prefix "FILTER DROP:"
+iptables -A LOGGING -j DROP
+iptables -A INPUT -j LOGGING
+iptables -A OUTPUT -j LOGGING
+

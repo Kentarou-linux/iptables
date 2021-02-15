@@ -1,0 +1,14 @@
+#!/bin/sh
+remotehost='10.64.128.0/24'
+myhost='10.64.128.3/32'
+friendhost='10.64.128.5/32'
+any='0.0.0.0/0'
+
+# ルールの初期化
+iptables -F
+iptables -X
+
+# 基本ポリシ
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT

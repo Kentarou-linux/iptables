@@ -1,0 +1,35 @@
+#!/bin/zsh 
+remotehost='10.64.128.0/24'
+myhost='10.64.128.26/32'
+friendhost='10.64.128.27/32'
+any='0.0.0.0/0'
+
+#ルールの初期化
+iptables -F
+iptables -X
+
+#ポリシー
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+#ping
+iptables -A OUTPUT -p icmp --icmp-type echo-request -s $myhost -d $any -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -s $any -d $myhost -j ACCEPT
+
+iptables -A INPUT -p icmp --icmp-type echo-request -s $any -d $myhost -m limit --limit 1/m --limit-burst 10 -j ACCEPT
+#iptables -A INPUT -p icmp --icmp-type echo-request -s $any -d $myhost -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -s $myhost -d $any -j ACCEPT
+
+#SSH
+iptables -A INPUT -p tcp -m state --state NEW,ESTABLISHED,RELATED -s $friendhost -d $myhost --dport 22 -j ACCEPT
+iptables -A OUTPUT -p tcp -s $myhost --sport 22 -d $friendhost -j ACCEPT
+iptables -A OUTPUT -p tcp -s $myhost -d $friendhost --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -s $friendhost --sport 22  -d $myhost -j ACCEPT
+
+#telnet
+iptables -A INPUT -p tcp  -s $friendhost -d $myhost --dport 23 -j ACCEPT
+iptables -A OUTPUT -p tcp -s $myhost --sport 23 -d $friendhost -j ACCEPT
+iptables -A OUTPUT -p tcp -s $myhost -d $friendhost --dport 23 -j ACCEPT
+iptables -A INPUT -p tcp -s $friendhost --sport 23  -d $myhost -j ACCEPT
+

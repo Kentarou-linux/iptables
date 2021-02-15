@@ -1,0 +1,20 @@
+#!/bin/zsh 
+remotehost='10.64.128.0/24'
+myhost='10.64.128.26/32'
+friendhost='10.64.128.27/32'
+any='0.0.0.0/0'
+
+#ルールの初期化
+iptables -F
+iptables -X
+
+#ポリシー
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+iptables -A OUTPUT -p tcp -m state --state NEW -s $myhost -d $any --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state ESTABLISHE,RELATED --sport 80 -s $any -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW,ESTABLISHE,RELATED -s $any -d $myhost --dport 80 -j ACCEPT
+iptables -A OUTPUT -p tcp -m state --state ESTABLISHED,RELATED -s $myhost --sport 80 -d $any -j ACCEPT
+
